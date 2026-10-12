@@ -1,3 +1,21 @@
+
+function startHKClock() {
+  const el = document.getElementById('hk-clock');
+  if (!el) return;
+  function tick() {
+    const now = new Date();
+    const s = now.toLocaleString('zh-HK', {
+      timeZone: 'Asia/Hong_Kong',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false
+    });
+    el.textContent = '香港時間 ' + s;
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
 document.querySelectorAll('.tab').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
@@ -112,7 +130,7 @@ function doSearch() {
   const q = input.value;
   const stock = findStock(q);
   if (!stock) {
-    hint.textContent = '找不到此股票。目前資料庫約涵蓋活躍主板股，可試 0700、騰訊、零跑、京東 等。';
+    hint.textContent = '找不到此股票。目前自動分析約涵蓋 150+ 活躍股；極小眾／低成交股未納入每日計算。可試常見代碼如 0700、9988、零跑。';
     hint.style.color = 'var(--red)';
     return;
   }
@@ -221,4 +239,4 @@ function init() {
   document.getElementById('back-btn').addEventListener('click', hideDetail);
 }
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => { init(); startHKClock(); });
