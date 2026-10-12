@@ -1,0 +1,40 @@
+name: Daily HK Stock Chips Update
+
+on:
+  schedule:
+    # 每个交易日 09:30 UTC = 17:30 HKT（港股收市后）
+    - cron: '30 9 * * 1-5'
+  workflow_dispatch:  # 允许手动触发
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install yfinance pandas numpy
+
+      - name: Run update script
+        run: python update.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data.js
+          if git diff --staged --quiet; then
+            echo "No data changes"
+          else
+            git commit -m "chore: daily chips update $(date -u +%Y-%m-%d)"
+            git push
+          fi
