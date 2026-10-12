@@ -59,6 +59,7 @@
         <button class="tab active" data-target="picks">推薦榜（含進出場）</button>
         <button class="tab" data-target="volume">成交額前 20</button>
         <button class="tab" data-target="turnover">週轉率前 20</button>
+        <button class="tab" data-target="holdings">我的持倉</button>
         <button class="tab" data-target="rules">評分與進出場邏輯</button>
       </nav>
 
@@ -93,6 +94,30 @@
               <tr>
                 <th>名次</th><th>股票</th><th>收盤</th><th>漲跌幅</th>
                 <th>成交量(萬股)</th><th>成交金額(億)</th><th>週轉率</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      
+      <section id="holdings" class="panel">
+        <h2>我的持倉</h2>
+        <p class="desc">資料只存在你本機瀏覽器（localStorage），唔會上傳。可自行新增、刪除。現價取自系統最新數據。</p>
+        <div class="holdings-form">
+          <input type="text" id="h-code" placeholder="代碼 如 0700" style="width:100px">
+          <input type="number" id="h-qty" placeholder="股數" step="1" style="width:100px">
+          <input type="number" id="h-cost" placeholder="成本價" step="0.001" style="width:100px">
+          <button type="button" id="h-add">加入持倉</button>
+        </div>
+        <div id="holdings-summary" class="pick-meta" style="margin:12px 0"></div>
+        <div class="table-wrap">
+          <table id="holdings-table">
+            <thead>
+              <tr>
+                <th>股票</th><th>股數</th><th>成本</th><th>現價</th>
+                <th>市值</th><th>盈虧</th><th>盈虧%</th><th></th>
               </tr>
             </thead>
             <tbody></tbody>

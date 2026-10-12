@@ -443,3 +443,15 @@ footer {
   text-underline-offset: 3px;
 }
 .pick-name-link:hover { color: var(--accent); }
+
+.holdings-form {
+  display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0;
+}
+.holdings-form input {
+  background: var(--card); border: 1px solid var(--border); color: var(--text);
+  padding: 8px 12px; border-radius: 8px; font-size: 0.9rem;
+}
+.holdings-form button {
+  background: var(--accent); color: #fff; border: none; padding: 8px 16px;
+  border-radius: 8px; cursor: pointer; font-size: 0.9rem;
+}

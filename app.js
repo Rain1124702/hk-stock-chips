@@ -1,4 +1,85 @@
 
+const HOLD_KEY = 'hk_chips_holdings';
+
+function loadHoldings() {
+  try { return JSON.parse(localStorage.getItem(HOLD_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveHoldings(list) {
+  localStorage.setItem(HOLD_KEY, JSON.stringify(list));
+}
+function findPrice(code) {
+  code = String(code).replace(/^0+/, '') || '0';
+  const all = (DATA && DATA.all_stocks) || (DATA && DATA.picks) || [];
+  const hit = all.find(s => String(s.code).replace(/^0+/, '') === code || String(s.code) === code.padStart(4,'0') || String(s.code) === code);
+  return hit || null;
+}
+function renderHoldings() {
+  const tbody = document.querySelector('#holdings-table tbody');
+  const sumEl = document.getElementById('holdings-summary');
+  if (!tbody) return;
+  const list = loadHoldings();
+  let totalCost = 0, totalMv = 0;
+  tbody.innerHTML = list.map((h, idx) => {
+    const info = findPrice(h.code);
+    const name = info ? info.name : h.code;
+    const px = info ? info.close : null;
+    const cost = Number(h.cost) || 0;
+    const qty = Number(h.qty) || 0;
+    const mv = px != null ? px * qty : null;
+    const pnl = mv != null ? mv - cost * qty : null;
+    const pnlPct = (px != null && cost) ? (px - cost) / cost * 100 : null;
+    if (cost && qty) totalCost += cost * qty;
+    if (mv != null) totalMv += mv;
+    const pnlCls = pnl != null ? (pnl >= 0 ? 'up' : 'down') : '';
+    return `<tr>
+      <td>${name} <span class="stock-code">${h.code}</span></td>
+      <td>${qty}</td>
+      <td>${fmt(cost, 3)}</td>
+      <td>${px != null ? fmt(px, 3) : '—'}</td>
+      <td>${mv != null ? fmt(mv, 0) : '—'}</td>
+      <td class="${pnlCls}">${pnl != null ? fmt(pnl, 0) : '—'}</td>
+      <td class="${pnlCls}">${pnlPct != null ? pct(pnlPct) : '—'}</td>
+      <td><button type="button" class="h-del" data-idx="${idx}" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:4px 8px;border-radius:6px;cursor:pointer">刪除</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="8" style="color:var(--muted)">尚未加入持倉</td></tr>';
+  const totalPnl = totalMv - totalCost;
+  sumEl.innerHTML = list.length
+    ? `共 <strong>${list.length}</strong> 隻 · 成本 <strong>${fmt(totalCost,0)}</strong> · 市值 <strong>${fmt(totalMv,0)}</strong> · 盈虧 <strong class="${totalPnl>=0?'up':'down'}">${fmt(totalPnl,0)}</strong>`
+    : '';
+  tbody.querySelectorAll('.h-del').forEach(btn => {
+    btn.onclick = () => {
+      const list = loadHoldings();
+      list.splice(Number(btn.dataset.idx), 1);
+      saveHoldings(list);
+      renderHoldings();
+    };
+  });
+}
+function setupHoldings() {
+  const addBtn = document.getElementById('h-add');
+  if (!addBtn) return;
+  addBtn.onclick = () => {
+    const code = (document.getElementById('h-code').value || '').trim().replace(/\.HK/i,'').replace(/^0+/, '') || '';
+    const qty = Number(document.getElementById('h-qty').value);
+    const cost = Number(document.getElementById('h-cost').value);
+    if (!code || !qty || !cost) {
+      alert('請填寫代碼、股數、成本價');
+      return;
+    }
+    const list = loadHoldings();
+    const pad = code.padStart(4, '0');
+    list.push({ code: pad, qty, cost });
+    saveHoldings(list);
+    document.getElementById('h-code').value = '';
+    document.getElementById('h-qty').value = '';
+    document.getElementById('h-cost').value = '';
+    renderHoldings();
+  };
+  renderHoldings();
+}
+
+
 function startHKClock() {
   const el = document.getElementById('hk-clock');
   if (!el) return;
@@ -22,7 +103,7 @@ document.querySelectorAll('.tab').forEach(btn => {
     document.querySelectorAll('#main-views .panel').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
     const target = document.getElementById(btn.dataset.target);
-    if (target) target.classList.add('active');
+    if (target) { target.classList.add('active'); if (btn.dataset.target === 'holdings') renderHoldings(); }
   });
 });
 
@@ -239,4 +320,4 @@ function init() {
   document.getElementById('back-btn').addEventListener('click', hideDetail);
 }
 
-document.addEventListener('DOMContentLoaded', () => { init(); startHKClock(); });
+document.addEventListener('DOMContentLoaded', () => { init(); startHKClock(); setupHoldings(); });

@@ -3,6 +3,10 @@
 import json
 import datetime
 from pathlib import Path
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    ZoneInfo = None
 from collections import Counter
 
 try:
@@ -33,6 +37,7 @@ NAME_MAP = {
     "2020.HK": "安踏體育", "2313.HK": "申洲國際", "2382.HK": "舜宇光學科技",
     "2688.HK": "新奧能源", "2883.HK": "中海油田服務", "3328.HK": "交通銀行",
     "6098.HK": "碧桂園服務", "6862.HK": "海底撈",
+    "2128.HK": "中國聯塑", "0732.HK": "信利國際",
     "0175.HK": "吉利汽車", "1928.HK": "金沙中國",
     "2331.HK": "李寧", "2319.HK": "蒙牛乳業", "1044.HK": "恆安國際",
     "0669.HK": "創科實業", "0762.HK": "中國聯通", "0728.HK": "中國電信",
@@ -206,7 +211,7 @@ def main():
     top_sector = Counter(p["sector"] for p in picks).most_common(1)[0][0]
     by_code = {x["code"]: x for x in results}
     data = {
-        "update_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "update_time": (datetime.datetime.now(ZoneInfo("Asia/Hong_Kong")) if ZoneInfo else datetime.datetime.utcnow() + datetime.timedelta(hours=8)).strftime("%Y-%m-%d %H:%M"),
         "summary": {
             "rec_count": len(picks),
             "avg_score": round(avg_score, 1),
