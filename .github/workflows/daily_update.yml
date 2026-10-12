@@ -2,9 +2,11 @@ name: Daily HK Stock Chips Update
 
 on:
   schedule:
-    # 每个交易日 09:30 UTC = 17:30 HKT（港股收市后）
-    - cron: '30 9 * * 1-5'
-  workflow_dispatch:  # 允许手动触发
+    # 香港時間 = UTC+8
+    - cron: '0 2 * * 1-5'   # 10:00 HKT 開市後
+    - cron: '30 4 * * 1-5'  # 12:30 HKT 中午休市
+    - cron: '0 9 * * 1-5'   # 17:00 HKT 收市後
+  workflow_dispatch:  # 可手動觸發
 
 permissions:
   contents: write
@@ -35,6 +37,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No data changes"
           else
-            git commit -m "chore: daily chips update $(date -u +%Y-%m-%d)"
+            git commit -m "chore: chips update $(date -u +%Y-%m-%d_%H:%M)"
             git push
           fi
