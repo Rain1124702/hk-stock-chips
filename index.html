@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>港股籌碼推薦系統 | HK Stock Chips</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>港股籌碼推薦系統</h1>
+      <p class="subtitle">每日收市後自動更新 · 打開即見最新評分、入場、止損、目標與原因 · 支援搜尋個股完整分析</p>
+      <div class="meta">
+        <span id="update-time">資料更新：載入中...</span>
+        <span class="badge">僅供研究參考 · 不構成投資建議</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- 搜尋 -->
+    <section class="search-box">
+      <input type="text" id="search-input" placeholder="搜尋股票代碼或名稱（例如 0700、騰訊、零跑）" autocomplete="off">
+      <button type="button" id="search-btn">搜尋分析</button>
+      <div id="search-hint" class="search-hint"></div>
+    </section>
+
+    <!-- 個股詳細分析（搜尋結果） -->
+    <section id="detail" class="panel detail-panel" style="display:none;">
+      <button type="button" class="back-btn" id="back-btn">← 返回列表</button>
+      <div id="detail-content"></div>
+    </section>
+
+    <div id="main-views">
+      <section class="summary-cards">
+        <div class="card">
+          <div class="card-label">推薦檔數</div>
+          <div class="card-value" id="rec-count">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">平均推薦分數</div>
+          <div class="card-value" id="avg-score">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">上漲 / 下跌</div>
+          <div class="card-value" id="up-down">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">最多檔產業</div>
+          <div class="card-value" id="top-sector">—</div>
+        </div>
+      </section>
+
+      <nav class="tabs">
+        <button class="tab active" data-target="picks">推薦榜（含進出場）</button>
+        <button class="tab" data-target="volume">成交額前 20</button>
+        <button class="tab" data-target="turnover">週轉率前 20</button>
+        <button class="tab" data-target="rules">評分與進出場邏輯</button>
+      </nav>
+
+      <section id="picks" class="panel active">
+        <h2>每日推薦（含建議入場／止損／目標）</h2>
+        <p class="desc">依評分排序。點股票名稱或使用上方搜尋，可看完整好壞判斷與操作說明。</p>
+        <div id="picks-cards" class="picks-cards"></div>
+      </section>
+
+      <section id="volume" class="panel">
+        <h2>成交額前 20 名</h2>
+        <p class="desc">依當日成交金額排名。</p>
+        <div class="table-wrap">
+          <table id="volume-table">
+            <thead>
+              <tr>
+                <th>名次</th><th>股票</th><th>收盤</th><th>漲跌幅</th>
+                <th>成交金額(億)</th><th>週轉率</th><th>成交量(萬股)</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="turnover" class="panel">
+        <h2>週轉率前 20 名</h2>
+        <p class="desc">相對活躍度越高，換手越熱絡。</p>
+        <div class="table-wrap">
+          <table id="turnover-table">
+            <thead>
+              <tr>
+                <th>名次</th><th>股票</th><th>收盤</th><th>漲跌幅</th>
+                <th>成交量(萬股)</th><th>成交金額(億)</th><th>週轉率</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="rules" class="panel">
+        <h2>評分方式</h2>
+        <table class="rules-table">
+          <thead><tr><th>項目</th><th>分數</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td>當日成交額 ÷ 5 日均成交額</td><td>30</td><td>量能爆發強度</td></tr>
+            <tr><td>5 日累計相對量能</td><td>20</td><td>持續性資金關注</td></tr>
+            <tr><td>連續上漲天數</td><td>15</td><td>動能延續</td></tr>
+            <tr><td>週轉率相對歷史平均</td><td>20</td><td>籌碼活躍度</td></tr>
+            <tr><td>價格位置（相對 20 日高低）</td><td>15</td><td>是否在相對強勢區間</td></tr>
+          </tbody>
+        </table>
+        <h2 style="margin-top:28px">進出場價計算邏輯</h2>
+        <ul>
+          <li><strong>入場區間</strong>：強勢股（量能放大 + 連漲）→ 現價附近可追或小回；中性偏多 → 回踩均線或近低；弱勢 → 等回調至支撐。</li>
+          <li><strong>止損</strong>：入場下緣 − 約 1.3 × ATR，控制單筆風險。</li>
+          <li><strong>目標</strong>：以風險的 1.5 倍與 2.2 倍推算，並參考近 20 日高點。</li>
+          <li><strong>好壞判斷</strong>：綜合評分、漲跌、量能倍數給出「偏多 / 中性偏多 / 中性 / 偏弱」與操作建議。</li>
+        </ul>
+        <p class="note">本系統僅供研究參考，不構成投資建議。港股無公開三大法人日報，以量能與動能為主要公開替代指標。</p>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>港股籌碼推薦系統 · 每日自動更新 · 僅供研究參考</p>
+    </div>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
