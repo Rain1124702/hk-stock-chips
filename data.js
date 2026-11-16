@@ -1,5 +1,5 @@
 const DATA = {
-  "update_time": "2026-11-16 16:59",
+  "update_time": "2026-11-16 21:04",
   "summary": {
     "rec_count": 30,
     "avg_score": 35.6,
